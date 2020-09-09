@@ -46,6 +46,7 @@ class State:
 
 '''
     Calculate all possible movements for a specific state
+        ~ simply returns the proper index values that will be switched in allowed movements
 '''
 def movements(state):
     moves = []
@@ -102,7 +103,7 @@ def expand_movements(parent_state):
         #expansion.append(State(new_layout, parent_state, goal_state, movements(new_layout), 0, 0))
         # Append new_layout to progress through
         expansion.append(new_layout)
-        
+
     return expansion
 
 '''
@@ -138,33 +139,52 @@ def manhattan_distance(state, goal_state):
     return h2
 
 '''
-    Searches
+    Searches/Algorithms
 '''
 def bfs(state):
-    # bfs code
-    print("bfs")
-    # initialize frontier & queue
+    # Define Max Depth value
+    max_depth = 0
+
+    # Check if initial state layout is the same as the goal node
+    # Remember: the goal test is applied to each node when it is generated
+    #           rather than when it is selected for expansion
+    if np.array_equal(state.state, state.goal):
+        return state
+
+    # FIFO queue of states
     frontier = []
-    queue = []
+    # Explored set of state layouts
+    explored = []
+    # Add the initial state to the frontier
     frontier.append(state)
-    queue.append(state)
 
-    while queue:
+    while frontier:
         # Treat 0 as beginning and appending to end
-        s = queue.pop(0)
-
-        # Check if goal node
+        parent = frontier.pop(0)
+        # add s state to explored
+        explored.append(parent.state)
 
         # Expand the movements
-        # Remember: the goal test is applied to each node when it is generated
-        # rather than when it is selected for expansion
-        successors = expand_movements(s)
+        # This just gives back the layouts
+        actions = expand_movements(parent)
 
-        for successor in successors:
-            if successor not in frontier:
-                frontier.append(successor)
-                queue.append(successor)
-
+        # for each layout/move from the expanded layouts/moves
+        for layout in actions:
+            # define the actual State
+            child = State(layout, parent, parent.goal, movements(layout), parent.depth+1, None)
+            # We need to check if a numpy array exists in a list of numpy arrays
+            # We will do this twice for the explored and frontier sets
+            in_explored = any((layout == x).all() for x in explored)
+            in_frontier = any((layout == x).all() for x in frontier)
+            if not(in_explored or in_frontier):
+                # Check if state layout is the same as the goal node
+                if np.array_equal(child.state, parent.goal):
+                    return child
+                frontier.append(child)
+                # If depth 10 we exit at this point since no layout matches
+                #max_depth = child.depth
+        #if max_depth == 10:
+          #  return  # child, false
 
 def ids():
     # ids code
@@ -177,6 +197,29 @@ def astar1():
 def astar2():
     # astar2 code
     print("astar2")
+
+'''
+    Returns steps from initial state to goal state
+        ~ Input: goal found child node
+        ~ Output: goal path from initial node to child node
+'''
+def goal_path(node):
+    goal_path = []
+    goal_path.append(node.state)
+    while node.parent != None:
+        # append parent layout
+        goal_path.append(node.parent.state)
+        node = node.parent
+    return reversed(goal_path)
+
+'''
+    Prints out the goal path
+'''
+def print_goal_path(goal_path):
+    print("Initial input state\n")
+    for state in goal_path:
+        print(state, "\n")
+    print("Goal state")
 
 if __name__ == '__main__':
     # if the arguments for the algorithm and initial puzzle sequence exist
@@ -193,9 +236,9 @@ if __name__ == '__main__':
     initial_state = np.array([[sys.argv[2], sys.argv[3], sys.argv[4]],
                               [sys.argv[5], sys.argv[6], sys.argv[7]],
                               [sys.argv[8], sys.argv[9], sys.argv[10]]])
-    goal_state = np.array([['*','1','2'],
-                           ['3','4','5'],
-                           ['6','7','8']])
+    goal_state = np.array([['1','2','3'],
+                           ['4','5','6'],
+                           ['7','8','*']])
     '''
         Let's get our algorithm
     '''
@@ -215,18 +258,23 @@ if __name__ == '__main__':
     # Error; algorithm not found
     if(found_algorithm == False):
         print("Chosen algorithm does not exist.")
+
     # BFS Algorithm
     elif(chosen_algorithm == algorithms[0]):
         # set root state
         root = State(initial_state, None, goal_state, movements(initial_state), 0, 0)
         # call algorithm
-        bfs()
+        found_goal = bfs(root)
+        goal_path = goal_path(found_goal)
+        print_goal_path(goal_path)
+
     # IDS Algorithm
     elif(chosen_algorithm == algorithms[1]):
         # set root state
         root = State(initial_state, None, goal_state, movements(initial_state), 0, 0)
         # call algorithm
         ids()
+
     # Astar1 Algorithm
     elif (chosen_algorithm == algorithms[2]):
         # set root state
@@ -234,6 +282,7 @@ if __name__ == '__main__':
                      misplaced_tiles(initial_state, goal_state))
         # call algorithm
         astar1()
+
     # Astar2 Algorithm
     elif (chosen_algorithm == algorithms[3]):
         # set root state
