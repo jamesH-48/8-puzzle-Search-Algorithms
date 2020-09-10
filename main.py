@@ -141,9 +141,13 @@ def manhattan_distance(state, goal_state):
 '''
     Searches/Algorithms
 '''
+# Breadth First Search
 def bfs(state):
     # Define Max Depth value
     max_depth = 0
+    pass_depth = False
+    # Total number of states ever enqueued
+    enqueued_num = 0
 
     # Check if initial state layout is the same as the goal node
     # Remember: the goal test is applied to each node when it is generated
@@ -157,10 +161,12 @@ def bfs(state):
     explored = []
     # Add the initial state to the frontier
     frontier.append(state)
+    enqueued_num += 1
 
     while frontier:
         # Treat 0 as beginning and appending to end
         parent = frontier.pop(0)
+        # enqueued_num -= 1
         # add s state to explored
         explored.append(parent.state)
 
@@ -179,16 +185,56 @@ def bfs(state):
             if not(in_explored or in_frontier):
                 # Check if state layout is the same as the goal node
                 if np.array_equal(child.state, parent.goal):
-                    return child
+                    return [child, pass_depth, enqueued_num]
                 frontier.append(child)
-                # If depth 10 we exit at this point since no layout matches
-                #max_depth = child.depth
-        #if max_depth == 10:
-          #  return  # child, false
+                enqueued_num += 1
+            # If depth 10 we exit at this point since no layout matches
+            max_depth = child.depth
+        if max_depth == 10:
+            pass_depth = True
+            return [child, pass_depth, enqueued_num]
 
-def ids():
-    # ids code
-    print("ids")
+# Depth Limited Search
+# Recursive version
+def dls(state, max_depth):
+    # If current state is goal state
+    if np.array_equal(state.state, state.goal):
+        return [state, True]
+    # Else if reached max_depth for iteration
+    elif max_depth <= 0 :
+        return [state, False]
+    else:
+        # Expand the movements
+        # This just gives back the layouts
+        actions = expand_movements(state)
+        # for each layout/move from the expanded layouts/moves
+        for layout in actions:
+            # define the actual State
+            child = State(layout, state, state.goal, movements(layout), state.depth + 1, None)
+            result = dls(child, max_depth - 1)
+            if result[1] == True:
+                return result # [state, True]
+    return [state, False]
+
+# Iterative Deepening Search
+# implements DLS (form of Depth First Search)
+def ids(state, max_depth):
+    # this initial case will not be caught by the range()
+    if max_depth == 0:
+        result = dls(state, 0)
+        node = result[0]
+        found = result[1]
+        if found == True:
+            return [node, found]
+
+    # max_depth is always 10
+    for depth in range(max_depth):
+        result = dls(state, depth)
+        node = result[0]
+        found = result[1]
+        if found == True:
+            return [node, found]
+    return [state, False]
 
 def astar1():
     # astar1 code
@@ -216,10 +262,13 @@ def goal_path(node):
     Prints out the goal path
 '''
 def print_goal_path(goal_path):
+    number_of_moves = -1
     print("Initial input state\n")
     for state in goal_path:
         print(state, "\n")
-    print("Goal state")
+        number_of_moves += 1
+    print("Goal state\n")
+    print("Number of moves = ", number_of_moves)
 
 if __name__ == '__main__':
     # if the arguments for the algorithm and initial puzzle sequence exist
@@ -264,16 +313,33 @@ if __name__ == '__main__':
         # set root state
         root = State(initial_state, None, goal_state, movements(initial_state), 0, 0)
         # call algorithm
-        found_goal = bfs(root)
-        goal_path = goal_path(found_goal)
-        print_goal_path(goal_path)
+        ret = bfs(root)
+        found_goal = ret[0]
+        hit_max_depth = ret[1]
+        enqueued_num = ret[2]
+        if hit_max_depth:
+            print("Hit max depth of 10 without finding goal.")
+        else:
+            goal_path = goal_path(found_goal)
+            print_goal_path(goal_path)
+            print("Number of states enqueued = ", enqueued_num)
 
     # IDS Algorithm
     elif(chosen_algorithm == algorithms[1]):
+        print("ids")
         # set root state
         root = State(initial_state, None, goal_state, movements(initial_state), 0, 0)
         # call algorithm
-        ids()
+        # max-depth is always 10
+        result = ids(root, 10)
+        found_goal = result[0]
+        found = result[1]
+        if found == True:
+            goal_path = goal_path(found_goal)
+            print_goal_path(goal_path)
+            print("Number of states enqueued = ")
+        else:
+            print("Hit max depth of 10 without finding goal.")
 
     # Astar1 Algorithm
     elif (chosen_algorithm == algorithms[2]):
