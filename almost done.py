@@ -505,6 +505,9 @@ def print_state(state):
         print()
 
 if __name__ == '__main__':
+    # Entry print
+    print("8 Puzzle")
+    print("~~~~~~~~~~~~~~~~~~~~")
     # if the arguments for the algorithm and initial puzzle sequence exist
     # there has to be an initial input, then the alg, then 9 more inputs after
     if(len(sys.argv) != 11):
