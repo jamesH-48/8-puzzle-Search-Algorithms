@@ -153,6 +153,12 @@ def bfs(state):
 
         # for each layout/move from the expanded layouts/moves
         for layout in actions:
+            # Check if next depth is past 10
+            max_depth = parent.depth + 1
+            # If depth is past 10 then return
+            if max_depth == 11:
+                pass_depth = True
+                return [None, pass_depth, enqueued_num]
             # define the actual State
             child = State(layout, parent, parent.goal, movements(layout), parent.depth+1, None, None, None)
             # We need to check if an array exists in a list of arrays
@@ -165,11 +171,6 @@ def bfs(state):
                     return [child, pass_depth, enqueued_num]
                 frontier.append(child)
                 enqueued_num += 1
-            # If depth 10 we exit at this point since no layout matches
-            max_depth = child.depth
-        if max_depth == 10:
-            pass_depth = True
-            return [None, pass_depth, enqueued_num]
 
 # Depth Limited Search
 # Recursive version
@@ -212,7 +213,8 @@ def ids(state, max_depth):
             return [node, found, enq_ids]
 
     # max_depth is always 10
-    for depth in range(max_depth):
+    # + 1 to the depth since the call needs to check nodes at depth 10 not just before it
+    for depth in range(max_depth + 1):
         # Set enqueued value to 0 for each iteration
         enq_ids = 0
         result = dls(state, depth)
@@ -262,9 +264,13 @@ def astar1(state):
         actions = expand_movements(curState)
         # for each layout/move from the expanded layouts/moves
         for layout in actions:
+            # If past depth 10 we exit at this point since no layout matches
+            max_depth = curState.depth + 1
+            if max_depth == 11:
+                pass_depth = True
+                return [child, pass_depth, enqueued_num]
+
             child = State(layout, curState, curState.goal, movements(layout), curState.depth + 1, None, None, None)
-            # If depth 10 we exit at this point since no layout matches
-            max_depth = child.depth
 
             # Print out for understanding choices for algorithm
             # cont = input("Children Cont: ")
@@ -310,10 +316,6 @@ def astar1(state):
             # Update/Set f_cost
             child.f_cost = child.g_cost + child.h_cost
 
-        if max_depth == 10:
-            pass_depth = True
-            return [child, pass_depth, enqueued_num]
-
 def astar2(state):
     # Define Max Depth value
     max_depth = 0
@@ -354,6 +356,12 @@ def astar2(state):
         actions = expand_movements(curState)
         # for each layout/move from the expanded layouts/moves
         for layout in actions:
+            # If past depth 10 we exit at this point since no layout matches
+            max_depth = curState.depth + 1
+            if max_depth == 11:
+                pass_depth = True
+                return [child, pass_depth, enqueued_num]
+
             # define the actual State
             child = State(layout, curState, curState.goal, movements(layout), curState.depth + 1, None, None, None)
             # If depth 10 we exit at this point since no layout matches
@@ -402,10 +410,6 @@ def astar2(state):
             child.g_cost = temp_gcost
             # Update/Set f_cost
             child.f_cost = child.g_cost + child.h_cost
-
-        if max_depth == 10:
-            pass_depth = True
-            return [child, pass_depth, enqueued_num]
 
 
 '''
@@ -607,7 +611,7 @@ if __name__ == '__main__':
         print("A* Search with Misplaced Tiles Heuristic")
         # set root state
         root_h_cost = misplaced_tiles(initial_state, goal_state)
-        print("Root Cost",root_h_cost)
+        # print("Root Cost",root_h_cost)
         root = State(initial_state, None, goal_state, movements(initial_state), 0, 0, root_h_cost, root_h_cost)
         # call algorithm
         ret = astar1(root)
@@ -626,7 +630,7 @@ if __name__ == '__main__':
         print("A* Search with Manhattan Distance Heuristic")
         # set root state
         root_h_cost = manhattan_distance(initial_state, goal_state)
-        print("Root Cost", root_h_cost)
+        # print("Root Cost", root_h_cost)
         root = State(initial_state, None, goal_state, movements(initial_state), 0, 0, root_h_cost, root_h_cost)
         # call algorithm
         ret = astar2(root)
