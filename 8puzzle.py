@@ -276,6 +276,7 @@ def astar1(state):
         for layout in actions:
             # If past depth 10 we exit at this point since no layout matches
             max_depth = curState.depth + 1
+            # print(max_depth)
             if max_depth == 11:
                 pass_depth = True
                 return [child, pass_depth, enqueued_num]
@@ -369,6 +370,7 @@ def astar2(state):
         for layout in actions:
             # If past depth 10 we exit at this point since no layout matches
             max_depth = curState.depth + 1
+            # print(max_depth)
             if max_depth == 11:
                 pass_depth = True
                 return [child, pass_depth, enqueued_num]
