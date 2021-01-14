@@ -1,10 +1,10 @@
 # 8-puzzle-Search-Algorithms
 ## Artificial Intelligence
 ### Implements Multiple Search Algorithms: 
-* Breadth First Search
-* Depth Limited Search
-* Iterative Deepening Search
-* A\* search
+* *Breadth First Search*
+* *Depth Limited Search*
+* *Iterative Deepening Search*
+* *A\* search*
 
 The A\* search is implemented in two ways with each having a different admissible heursitic function: **Misplaced Tiles** & **Manhattan Distance**. 
 
